@@ -1,0 +1,10 @@
+{
+  "capture_interval": 2.0,
+  "min_brightness": 10,
+  "max_brightness": 100,
+  "brightness_sensitivity": 0.8,
+  "dark_threshold": 50,
+  "bright_threshold": 150,
+  "enabled": true,
+  "camera_index": 0
+}
