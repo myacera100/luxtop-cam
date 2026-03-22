@@ -1,0 +1,147 @@
+QDialog#luxPanel {
+    margin: 0px 10px;
+    background-color: #efefef;
+}
+QSlider#briSlider {
+    margin: 16px;
+    min-width: 300px;
+}
+QSlider#briSlider::sub-page {
+	background-color: qlineargradient(spread:pad, x1:1, y1:0, x2:, y2:0, stop:0 rgba(51, 153, 255, 255), stop:1 rgba(115, 217, 255, 255));
+}
+QSlider#briSlider::add-page {
+    background-color: #a0a0a0;
+}
+QSlider#briSlider::groove {
+	height: 4px;
+	border: 1px solid transparent;
+	border-radius: 2px;
+}
+QSlider#briSlider::handle {
+	width: 24px;
+	height: 20px;
+	border: 3px solid SkyBlue;
+	margin: -13px;
+	border-radius: 15px;
+	background-color: qlineargradient(spread:pad, x1:1, y1:1, x2:0, y2:0, stop:0 rgba(192, 223, 255, 255), stop:1 rgba(255, 255, 255, 255))
+}
+QSlider#scaleSlider {
+    margin: 0px 2px;
+    min-width: 100px;
+    min-height: 32px;
+}
+QSlider#scaleSlider::groove {
+	height: 28px;
+	border-radius: 14px;
+	background-color: rgba(112, 128, 144, 255);
+}
+QSlider#scaleSlider::handle {
+	width: 22px;
+	height: 22px;
+	margin: 3px;
+	border-radius: 11px;
+	background-color: qlineargradient(spread:reflect, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(240, 255, 255, 255), stop:1 rgba(176, 192, 208, 255));
+}
+QSlider#daySlider, #ssSlider, #nightSlider {
+    margin: 0px 2px;
+    min-width: 100px;
+    min-height: 30px;
+}
+QSlider#daySlider::groove, #ssSlider::groove, #nightSlider::groove {
+height: 4px;
+	border: 2px solid #c0c0c0;
+	border-radius: 4px;
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(255, 56, 0, 255), stop:0.5 rgba(255, 243, 239, 255), stop:1 rgba(195, 209, 255, 255));}
+QSlider#daySlider::handle, #ssSlider::handle, #nightSlider::handle {
+	width: 20px;
+	height: 16px;
+	border: 2px solid #a0a0a0;
+	margin: -10px;
+	border-radius: 12px;
+	border-image: url(:/images/sunset);
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(255, 255, 255, 255), stop:1 rgba(227, 227, 227, 255));
+}
+QLCDNumber#briLCD {
+    min-width: 180px;
+    color: #cc3399ff
+}
+QLCDNumber#luxLCD {
+    min-width: 180px;
+    color: #ccff0066
+}
+QPushButton:hover {
+    background-color: #a0a0a080;
+}
+QPushButton:pressed {
+    background-color: #a0a0a0;
+}
+QPushButton#assocBtn {
+    min-width: 64px;
+    min-height: 64px;
+    border-image: url(:/images/assoc);
+    border-radius: 32px;
+}
+QPushButton#minBtn:hover, #mxBriBtn:hover {
+    background-color: LightBlue;
+}
+QPushButton#minBtn:pressed, #mxBriBtn:pressed {
+    background-color: RoyalBLue;
+}
+QPushButton#miBriBtn, #mxBriBtn {
+    font-size: 12pt;
+    color: LightCyan;
+    background-color: SteelBlue;
+    border-radius: 4px;
+    text-align: center center;
+    padding: 3px 6px;
+}
+QPushButton#miBriBtn, #mxBriBtn, #kelBtn {
+    min-width: 32px;
+    min-height: 32px;
+    padding: 0px;
+}
+QPushButton#lwProBtn {
+    border-image: url(:/images/lwpro)
+}
+QPushButton#hiProBtn {
+    border-image: url(:/images/hipro)
+}
+QPushButton#kelBtn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-image: url(:/images/kelvin)
+}
+QPushButton#toggleBtn {
+    width: 64px;
+    height: 64px;
+    padding: 0;
+    border-image: url(:/images/toggle)
+}
+QLabel {
+    font-family: "Calibri";
+    font-weight: 75;
+}
+QLabel#briLabel, #luxLabel {
+    min-width: 60px;
+    font-style: italic;
+    font-size: 14pt;
+    color: LightCyan;
+}
+QLabel#briLabel {
+    padding-left: 30px;
+    padding-right: 80px;
+    image: url(:/images/bri);
+    image-position: left;
+	background-color: qlineargradient(spread:reflect, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(51, 153, 255, 204), stop:1 rgba(239, 239, 239, 204));
+}
+QLabel#luxLabel {
+    padding-left: 80px;
+    padding-right: 30px;
+    image: url(:/images/lux);
+    image-position: left;
+	background-color: qlineargradient(spread:reflect, x1:1, y1:0, x2:0, y2:0, stop:0 rgba(255, 0, 102, 204), stop:1 rgba(239, 239, 239, 204));
+}
+QLabel#dayLabel, #ssLabel, #nightLabel {
+    font-size: 10pt;
+}

@@ -5,7 +5,7 @@ import sys
 import json
 from pathlib import Path
 from PyQt5.QtWidgets import QApplication
-from gui.lux_panel import LuxWindow
+from gui.mainwindow import LuxWindow
 from utils.logger import setup_logger
 
 logger = setup_logger(__name__)
