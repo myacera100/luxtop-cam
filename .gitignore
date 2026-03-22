@@ -9,6 +9,7 @@ wheels/
 *.env
 .vscode/
 backups/
+*.ui
 
 # Virtual environments
 .venv

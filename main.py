@@ -5,7 +5,7 @@ import sys
 import json
 from pathlib import Path
 from PyQt5.QtWidgets import QApplication
-from gui.widgets import MainWindow
+from gui.lux_panel import LuxWindow
 from utils.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -61,7 +61,7 @@ def main():
     app.setApplicationVersion("1.0.0")
     
     # Create and show main window
-    window = MainWindow(config, save_config)
+    window = LuxWindow(config, save_config)
     window.show()
     
     # Run application

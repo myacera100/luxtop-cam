@@ -4,8 +4,9 @@ Handles webcam image capture, brightness analysis, and system brightness adjustm
 """
 import cv2
 import numpy as np
-from typing import Tuple, Optional
+from typing import Dict, Optional, Any
 import screen_brightness_control as sbc
+from PyQt5.QtCore import pyqtSignal, QThread
 
 from utils.logger import setup_logger
 
@@ -35,7 +36,7 @@ class BrightnessController:
             bool: True if camera initialized successfully, False otherwise
         """
         try:
-            self.cap = cv2.VideoCapture(self.camera_index)
+            self.cap = cv2.VideoCapture(self.camera_index, cv2.CAP_DSHOW)
             
             if not self.cap.isOpened():
                 logger.error(f"Failed to open camera at index {self.camera_index}")
@@ -214,3 +215,67 @@ class BrightnessController:
     def __del__(self):
         """Destructor to ensure cleanup."""
         self.cleanup()
+        
+        
+class BrightnessWorker(QThread):
+    """Worker thread for brightness control to prevent GUI freezing."""
+    
+    brightness_updated = pyqtSignal(float, int)  # detected_brightness, system_brightness
+    error_occurred = pyqtSignal(str)
+    
+    def __init__(self, controller: BrightnessController, config: Dict[str, Any]):
+        super().__init__()
+        self.controller = controller
+        self.config = config
+        self.is_running = False
+        self.should_process = True
+    
+    def run(self):
+        """Main worker loop."""
+        self.is_running = True
+        
+        while self.is_running and self.should_process:
+            try:
+                # Capture frame
+                frame = self.controller.capture_frame()
+                
+                if frame is None:
+                    self.error_occurred.emit("Failed to capture frame from camera")
+                    self.msleep(int(self.config.get('capture_interval', 2.0) * 1000))
+                    continue
+                
+                # Calculate brightness
+                detected_brightness = self.controller.calculate_brightness(frame)
+                
+                # Map and set brightness if enabled
+                if self.config.get('enabled', True):
+                    monitor_brightness = self.controller.map_brightness_to_monitor(
+                        detected_brightness,
+                        min_bright=self.config.get('min_brightness', 10),
+                        max_bright=self.config.get('max_brightness', 100),
+                        dark_threshold=self.config.get('dark_threshold', 50),
+                        bright_threshold=self.config.get('bright_threshold', 150),
+                        sensitivity=self.config.get('brightness_sensitivity', 0.8)
+                    )
+                    
+                    # Set system brightness
+                    self.controller.set_system_brightness(monitor_brightness)
+                
+                else:
+                    monitor_brightness = self.controller.get_system_brightness() or 50
+                
+                # Emit signal with updated values
+                self.brightness_updated.emit(detected_brightness, monitor_brightness)
+                
+                # Sleep for configured interval
+                self.msleep(int(self.config.get('capture_interval', 2.0) * 1000))
+                
+            except Exception as e:
+                logger.error(f"Error in brightness worker: {e}")
+                self.error_occurred.emit(f"Error: {str(e)}")
+                self.msleep(2000)
+    
+    def stop(self):
+        """Stop the worker thread."""
+        self.is_running = False
+        self.wait()
