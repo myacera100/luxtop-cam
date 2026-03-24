@@ -9,6 +9,7 @@ import screen_brightness_control as sbc
 from PyQt5.QtCore import pyqtSignal, QThread
 
 from utils.logger import setup_logger
+from core.luminance import ImageBrightness
 
 logger = setup_logger(__name__)
 
@@ -93,23 +94,18 @@ class BrightnessController:
             return 0.0
         
         try:
-            # Convert to grayscale
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            if self.cap is not None:
+                # Retrieve EV from the capturing device which is commonly available
+                camera_ev = self.cap.get(cv2.CAP_PROP_EXPOSURE)
+            else:
+                # Specify a typical EV for indoor lighting
+                camera_ev = 6.0
+            luma = ImageBrightness(camera_ev)
+            perceived_lightness = luma.calculate_perceived_brightness(frame)
             
-            # Calculate average brightness
-            avg_brightness = np.mean(gray)
-            
-            # Calculate luminosity using weighted method (more accurate)
-            # Standard luminosity formula: 0.299*R + 0.587*G + 0.114*B
-            b, g, r = cv2.split(frame)
-            luminosity = 0.299 * r + 0.587 * g + 0.114 * b
-            weighted_brightness = np.mean(luminosity)
-            
-            # Use weighted average of both methods
-            brightness = (avg_brightness * 0.4 + weighted_brightness * 0.6)
-            
-            logger.debug(f"Calculated brightness: {brightness:.2f}")
-            return brightness
+            logger.debug(f"Calculated brightness: {perceived_lightness:.2f}")
+            return perceived_lightness
+
         except Exception as e:
             logger.error(f"Error calculating brightness: {e}")
             return 0.0

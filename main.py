@@ -5,6 +5,7 @@ import sys
 import json
 from pathlib import Path
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import Qt
 from gui.mainwindow import LuxWindow
 from utils.logger import setup_logger
 
@@ -56,6 +57,7 @@ def main():
     config = load_config()
     
     # Create Qt application
+    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     app = QApplication(sys.argv)
     app.setApplicationName("Auto Brightness Controller")
     app.setApplicationVersion("1.0.0")
