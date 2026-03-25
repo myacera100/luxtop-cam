@@ -6,7 +6,8 @@ import cv2
 import numpy as np
 from typing import Dict, Optional, Any
 import screen_brightness_control as sbc
-from PyQt5.QtCore import pyqtSignal, QThread
+from PyQt5.QtCore import pyqtSignal, QThread, QTimer
+from numta.streaming import StreamingEMA as EMA
 
 from utils.logger import setup_logger
 from core.luminance import ImageLightness
@@ -27,6 +28,7 @@ class BrightnessController:
         self.camera_index = camera_index
         self.cap = None
         self.is_initialized = False
+        self.refluxer = EMA(timeperiod=5)
         
         self._initialize_camera()
     

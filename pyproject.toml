@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "numta[numba]>=0.2.0",
     "opencv-python>=4.13.0.92",
     "screen-brightness-control>=0.27.1",
 ]
