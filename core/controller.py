@@ -9,7 +9,7 @@ import screen_brightness_control as sbc
 from PyQt5.QtCore import pyqtSignal, QThread
 
 from utils.logger import setup_logger
-from core.luminance import ImageBrightness
+from core.luminance import ImageLightness
 
 logger = setup_logger(__name__)
 
@@ -27,6 +27,7 @@ class BrightnessController:
         self.camera_index = camera_index
         self.cap = None
         self.is_initialized = False
+        
         self._initialize_camera()
     
     def _initialize_camera(self) -> bool:
@@ -76,7 +77,7 @@ class BrightnessController:
             logger.error(f"Error capturing frame: {e}")
             return None
     
-    def calculate_brightness(self, frame: np.ndarray) -> float:
+    def get_image_lightness(self, frame: np.ndarray) -> float:
         """
         Calculate brightness value from image frame.
         
@@ -100,8 +101,8 @@ class BrightnessController:
             else:
                 # Specify a typical EV for indoor lighting
                 camera_ev = 6.0
-            luma = ImageBrightness(camera_ev)
-            perceived_lightness = luma.calculate_perceived_brightness(frame)
+            luma = ImageLightness(camera_ev)
+            perceived_lightness = luma.calculate_perceived_lightness(frame)
             
             logger.debug(f"Calculated brightness: {perceived_lightness:.2f}")
             return perceived_lightness
@@ -110,13 +111,11 @@ class BrightnessController:
             logger.error(f"Error calculating brightness: {e}")
             return 0.0
     
-    def map_brightness_to_monitor(
+    def get_monitor_brightness(
         self,
-        detected_brightness: float,
+        detected_lightness: float,
         min_bright: int = 10,
         max_bright: int = 100,
-        dark_threshold: int = 50,
-        bright_threshold: int = 150,
         sensitivity: float = 0.8
     ) -> int:
         """
@@ -125,11 +124,9 @@ class BrightnessController:
         Uses non-linear mapping to provide better control across the brightness range.
         
         Args:
-            detected_brightness: Detected brightness from camera (0-255)
+            detected_lightness: Detected lightness from camera (0-255)
             min_bright: Minimum monitor brightness to set (0-100)
             max_bright: Maximum monitor brightness to set (0-100)
-            dark_threshold: Brightness below which image is dark
-            bright_threshold: Brightness above which image is bright
             sensitivity: Sensitivity multiplier for brightness changes (0-1)
         
         Returns:
@@ -137,7 +134,7 @@ class BrightnessController:
         """
         try:
             # Normalize detected brightness to 0-1 range
-            normalized = detected_brightness / 255.0
+            normalized = detected_lightness / 255.0
             
             # Apply non-linear mapping (logarithmic for better perception)
             if normalized < 0.3:
@@ -159,12 +156,12 @@ class BrightnessController:
             monitor_brightness = max(min_bright, min(int(mapped), max_bright))
             
             logger.debug(
-                f"Mapped brightness: detected={detected_brightness:.2f}, "
+                f"Mapped brightness: detected={detected_lightness:.2f}, "
                 f"normalized={normalized:.2f}, monitor={monitor_brightness}"
             )
             return monitor_brightness
         except Exception as e:
-            logger.error(f"Error mapping brightness: {e}")
+            logger.error(f"Error calculating brightness: {e}")
             return 50
     
     def set_system_brightness(self, brightness: int) -> bool:
@@ -241,12 +238,12 @@ class BrightnessWorker(QThread):
                     continue
                 
                 # Calculate brightness
-                detected_brightness = self.controller.calculate_brightness(frame)
+                perceived_lightness = self.controller.get_image_lightness(frame)
                 
                 # Map and set brightness if enabled
                 if self.config.get('enabled', True):
-                    monitor_brightness = self.controller.map_brightness_to_monitor(
-                        detected_brightness,
+                    monitor_brightness = self.controller.get_monitor_brightness(
+                        perceived_lightness,
                         min_bright=self.config.get('min_brightness', 10),
                         max_bright=self.config.get('max_brightness', 100),
                         dark_threshold=self.config.get('dark_threshold', 50),
@@ -261,7 +258,7 @@ class BrightnessWorker(QThread):
                     monitor_brightness = self.controller.get_system_brightness() or 50
                 
                 # Emit signal with updated values
-                self.brightness_updated.emit(detected_brightness, monitor_brightness)
+                self.brightness_updated.emit(perceived_lightness, monitor_brightness)
                 
                 # Sleep for configured interval
                 self.msleep(int(self.config.get('capture_interval', 2.0) * 1000))

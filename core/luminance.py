@@ -5,10 +5,10 @@ from utils.logger import setup_logger
 
 logger = setup_logger(__name__)
 
-class ImageBrightness:
+class ImageLightness:
     def __init__(self, target_exposure_value=0.0):
         """
-        Initialize brightness calculator with exposure awareness
+        Initialize lightness calculator with exposure awareness
         
         Args:
             target_exposure_value: Target EV (Exposure Value) compensation (0 = no additional exposure)
@@ -79,15 +79,15 @@ class ImageBrightness:
         # Adjust for clipping
         clipping_penalty = 1.0
         if exposure_analysis['overexposed_ratio'] > 0.05:
-            # Overexposed - reduce perceived brightness penalty
+            # Overexposed - reduce perceived lightness penalty
             clipping_penalty = 1.0 - (exposure_analysis['overexposed_ratio'] * 2)
         
         if exposure_analysis['underexposed_ratio'] > 0.1:
-            # Underexposed - increase perceived brightness penalty
+            # Underexposed - increase perceived lightness penalty
             clipping_penalty *= 1.0 - (exposure_analysis['underexposed_ratio'])
         
         # Convert stops to linear compensation factor
-        # 1 stop = factor of 2 in linear brightness
+        # 1 stop = factor of 2 in linear lightness
         exposure_compensation = (2 ** (-deviation_stops)) * clipping_penalty
         
         # Clamp to reasonable range
@@ -99,31 +99,31 @@ class ImageBrightness:
         """
         Calculate dynamic range adjustment factor
         
-        High dynamic range scenes affect perceived brightness
+        High dynamic range scenes affect perceived lightness
         """
         dr_used = exposure_analysis['dynamic_range_used']
         
         # If using less dynamic range, image may appear less contrasty
-        # which affects perceived brightness
+        # which affects perceived lightness
         if dr_used < 0.5:
-            # Low contrast scene - perceived brightness reduced
+            # Low contrast scene - perceived lightness reduced
             return 0.9 + (dr_used * 0.2)
         elif dr_used > 0.8:
-            # High contrast scene - perceived brightness increased
+            # High contrast scene - perceived lightness increased
             return 1.0 + ((dr_used - 0.8) * 0.5)
         else:
             return 1.0
     
-    def calculate_perceived_brightness(self, image_rgb):
+    def calculate_perceived_lightness(self, image_rgb):
         """
-        Calculate perceived brightness with exposure analysis
+        Calculate perceived lightness with exposure analysis
         
         Args:
             image_rgb: RGB image (0-255 range)
             image_path: Path to image file (for EXIF extraction)
             
         Returns:
-            float or dict: Perceived brightness value (0-1 range)
+            float or dict: Perceived lightness value
         """
         # Convert to linear space
         r_linear = self.linearize_srgb(image_rgb[:, :, 0])
@@ -132,7 +132,7 @@ class ImageBrightness:
         
         # Calculate base luma
         luma_map = self.calculate_luma_709(r_linear, g_linear, b_linear)
-        base_brightness = np.mean(luma_map)
+        base_lightness = np.mean(luma_map)
         
         # Analyze exposure from image data
         exposure_analysis = self.analyze_image_exposure(luma_map)
@@ -146,13 +146,13 @@ class ImageBrightness:
         # Calculate compensation from external EV
         external_compensation = self.get_external_compensation()
         
-        return base_brightness * exposure_compensation * external_compensation * dr_adjustment
+        return base_lightness * exposure_compensation * external_compensation * dr_adjustment
     
-    def calculate_zone_system_brightness(self, image_rgb):
+    def calculate_zone_system_lightness(self, image_rgb):
         """
-        Calculate brightness using Ansel Adams Zone System approach
+        Calculate lightness using Ansel Adams Zone System approach
         
-        Maps image zones (0-10) to perceived brightness
+        Maps image zones (0-10) to perceived lightness
         """
         # Convert to linear space
         r_linear = self.linearize_srgb(image_rgb[:, :, 0])
@@ -173,7 +173,7 @@ class ImageBrightness:
         weights = 1.0 - np.abs(zone_values - 5) / 5  # Weight zone V highest
         weighted_zone = np.average(zone_values, weights=weights)
         
-        # Convert zone back to perceived brightness (0-1)
-        perceived_brightness = weighted_zone / 10
+        # Convert zone back to perceived lightness (0-1)
+        perceived_lightness = weighted_zone / 10
         
-        return perceived_brightness
+        return perceived_lightness
