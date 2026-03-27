@@ -8,7 +8,7 @@ from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QThread, QPropertyAnimation
 from typing import Callable, Dict, Any
 
 from gui.tray import SystemTrayIcon
-from core.controller import BrightnessController, BrightnessWorker
+from core.refluxer import Refluxer, BrightnessWorker
 from utils.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -206,7 +206,7 @@ class MainWindow(QMainWindow):
         """Start the brightness controller worker thread."""
         try:
             if self.controller is None:
-                self.controller = BrightnessController(
+                self.controller = Refluxer(
                     camera_index=self.config.get('camera_index', 0)
                 )
             

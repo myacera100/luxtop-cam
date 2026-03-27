@@ -6,7 +6,7 @@ from typing import Callable, Dict, Any
 
 from gui.widgets import SenseSlider
 from gui.tray import SystemTrayIcon
-from core.controller import BrightnessController, BrightnessWorker
+from core.refluxer import Refluxer, BrightnessWorker
 from gui.luxpanel import Ui_LuxPanel
 import res.lux_res as lux_res
 from utils.logger import setup_logger
@@ -140,7 +140,7 @@ class LuxWindow(QtWidgets.QDialog):
         pass
     
     def init_controller(self):
-        self.controller = BrightnessController(
+        self.controller = Refluxer(
             camera_index=self.config.get('camera_index', 0)
         )
         if not self.controller.is_initialized:
